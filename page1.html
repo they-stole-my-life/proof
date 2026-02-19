@@ -74,7 +74,7 @@
 
   <!-- BIG HEADER -->
   <header class="hero">
-    <h1 class="hero-title">Articles</h1>
+    <h1 class="hero-title">MODIFY TEXT HERE FOR HEADER</h1>
   </header>
 
   <!-- NAV BAR -->
@@ -122,8 +122,7 @@
       container.appendChild(section);
     }
 
-    /* Mobile stability: load closer to viewport and only when meaningfully visible */
-    const ROOT_MARGIN = "150px 0px 150px 0px";
+    const ROOT_MARGIN = "600px 0px 600px 0px";
 
     function mount(card) {
       if (card.querySelector("iframe")) return;
@@ -153,7 +152,7 @@
         if (e.isIntersecting) mount(card);
         else unmount(card);
       }
-    }, { rootMargin: ROOT_MARGIN, threshold: 0.2 });
+    }, { rootMargin: ROOT_MARGIN, threshold: 0.01 });
 
     document.querySelectorAll(".pdf").forEach(card => io.observe(card));
   </script>
