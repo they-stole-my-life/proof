@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "proof/date.txt"
-      - "proof/index-placeholder.html"
+      - "proof/index_placeholder.html"
       - "proof/templates/**"
       - "proof/.github/workflows/deadman.yml"
   schedule:
@@ -68,7 +68,7 @@ jobs:
 
           if [ "$MODE" = "SAFE" ]; then
             echo "SAFE MODE"
-            cp index-placeholder.html index.html
+            cp index_placeholder.html index.html
             rm -f page1.html page2.html page3.html page4.html page5.html page6.html
             exit 0
           fi
@@ -78,6 +78,12 @@ jobs:
           make_page () {
             NUM="$1"
             IDS="$2"
+
+            # If secret is empty/unset, still create a valid (empty) page.
+            if [ -z "$IDS" ]; then
+              IDS=""
+            fi
+
             IDS_B64="$(printf "%s" "$IDS" | base64 -w 0)"
             sed "s|__IDS_B64__|$IDS_B64|g" templates/pdf-shower.template.html > "page${NUM}.html"
           }
@@ -89,6 +95,7 @@ jobs:
           make_page 5 "$REVEAL_IDS_5"
           make_page 6 "$REVEAL_IDS_6"
 
+          # Homepage shows Page 1
           cp page1.html index.html
 
       - name: Commit if changed
