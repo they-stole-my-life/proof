@@ -49,26 +49,37 @@ jobs:
         env:
           MODE: ${{ env.MODE }}
           REVEAL_IDS_1: ${{ secrets.REVEAL_IDS_1 }}
+          REVEAL_IDS_2: ${{ secrets.REVEAL_IDS_2 }}
+          REVEAL_IDS_3: ${{ secrets.REVEAL_IDS_3 }}
+          REVEAL_IDS_4: ${{ secrets.REVEAL_IDS_4 }}
+          REVEAL_IDS_5: ${{ secrets.REVEAL_IDS_5 }}
+          REVEAL_IDS_6: ${{ secrets.REVEAL_IDS_6 }}
         run: |
           set -e
 
           if [ "$MODE" = "SAFE" ]; then
             echo "SAFE MODE"
             cp index_placeholder.html index.html
-            rm -f page1.html
+            rm -f page1.html page2.html page3.html page4.html page5.html page6.html
             exit 0
           fi
 
           echo "REVEAL MODE"
 
-          # Base64 encode IDs (preserve newlines safely)
-          IDS_B64="$(printf "%s" "$REVEAL_IDS_1" | base64 -w 0)"
+          make_page () {
+            NUM="$1"
+            IDS="$2"
+            IDS_B64="$(printf "%s" "$IDS" | base64 -w 0)"
+            sed "s|__IDS_B64__|$IDS_B64|g" templates/pdf-shower.template.html > "page${NUM}.html"
+          }
 
-          # Build page1.html from template using sed replacement
-          # (uses a delimiter unlikely to appear in base64)
-          sed "s|__IDS_B64__|$IDS_B64|g" templates/pdf-shower.template.html > page1.html
+          make_page 1 "$REVEAL_IDS_1"
+          make_page 2 "$REVEAL_IDS_2"
+          make_page 3 "$REVEAL_IDS_3"
+          make_page 4 "$REVEAL_IDS_4"
+          make_page 5 "$REVEAL_IDS_5"
+          make_page 6 "$REVEAL_IDS_6"
 
-          # Make homepage show Page 1 directly
           cp page1.html index.html
 
       - name: Commit if changed
