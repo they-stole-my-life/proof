@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "proof/date.txt"
+      - "proof/index-placeholder.html"
+      - "proof/templates/**"
+      - "proof/.github/workflows/deadman.yml"
   schedule:
     - cron: '0 15 * * *'   # 9:00 AM CST (15:00 UTC). Will be 10 AM during CDT.
   workflow_dispatch:
@@ -14,6 +19,10 @@ permissions:
 concurrency:
   group: deadman
   cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: proof
 
 jobs:
   switch:
@@ -59,7 +68,7 @@ jobs:
 
           if [ "$MODE" = "SAFE" ]; then
             echo "SAFE MODE"
-            cp index_placeholder.html index.html
+            cp index-placeholder.html index.html
             rm -f page1.html page2.html page3.html page4.html page5.html page6.html
             exit 0
           fi
