@@ -4,8 +4,38 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PDF Archive</title>
+
+  <!-- Optional Google Font (safe fallback if it ever fails) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet">
+
   <style>
     body { font-family: system-ui, sans-serif; margin: 0; }
+
+    /* BIG HEADER */
+    .hero {
+      text-align: center;
+      padding: 44px 18px 26px 18px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+    }
+    .hero-title {
+      font-family: 'Pangolin', system-ui, sans-serif;
+      margin: 0;
+      line-height: 1.05;
+      /* Huge but responsive, never overflows */
+      font-size: clamp(2.5rem, 9vw, 6rem);
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+
+      /* Safety against overflow */
+      overflow-wrap: break-word;
+      word-break: break-word;
+
+      color: #111;
+    }
 
     /* NAVIGATION */
     .nav {
@@ -42,6 +72,11 @@
 
 <body>
 
+  <!-- BIG HEADER -->
+  <header class="hero">
+    <h1 class="hero-title">MODIFY TEXT HERE FOR HEADER</h1>
+  </header>
+
   <!-- NAV BAR -->
   <nav class="nav">
     <a href="page1.html">Page 1</a>
@@ -53,7 +88,6 @@
   </nav>
 
   <div class="wrap">
-    <h1>PDF Archive</h1>
     <div id="container"></div>
   </div>
 
