@@ -2,16 +2,15 @@ name: Deadman Switch
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
     paths:
-      - "proof/date.txt"
-      - "proof/index_placeholder.html"
-      - "proof/templates/**"
-      - "proof/.github/workflows/deadman.yml"
+      - "date.txt"
+      - "index_placeholder.html"
+      - "templates/**"
+      - ".github/workflows/deadman.yml"
   schedule:
-    - cron: '0 15 * * *'   # 9:00 AM CST (15:00 UTC). Will be 10 AM during CDT.
-  workflow_dispatch:
+    - cron: "0 15 * * *"   # 9:00 AM CST (15:00 UTC). Will be 10 AM during CDT.
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -20,10 +19,6 @@ concurrency:
   group: deadman
   cancel-in-progress: false
 
-defaults:
-  run:
-    working-directory: proof
-
 jobs:
   switch:
     runs-on: ubuntu-latest
@@ -31,11 +26,13 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Determine SAFE or REVEAL
         run: |
-          set -e
-          DATE_STR="$(cat date.txt | tr -d ' \r\n')"
+          set -euo pipefail
+          DATE_STR="$(tr -d ' \r\n' < date.txt)"
 
           if ! echo "$DATE_STR" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
             echo "date.txt must be YYYY-MM-DD"
@@ -64,7 +61,7 @@ jobs:
           REVEAL_IDS_5: ${{ secrets.REVEAL_IDS_5 }}
           REVEAL_IDS_6: ${{ secrets.REVEAL_IDS_6 }}
         run: |
-          set -e
+          set -euo pipefail
 
           if [ "$MODE" = "SAFE" ]; then
             echo "SAFE MODE"
@@ -76,24 +73,19 @@ jobs:
           echo "REVEAL MODE"
 
           make_page () {
-            NUM="$1"
-            IDS="$2"
-
-            # If secret is empty/unset, still create a valid (empty) page.
-            if [ -z "$IDS" ]; then
-              IDS=""
-            fi
-
+            local NUM="$1"
+            local IDS="${2:-}"
+            local IDS_B64
             IDS_B64="$(printf "%s" "$IDS" | base64 -w 0)"
             sed "s|__IDS_B64__|$IDS_B64|g" templates/pdf-shower.template.html > "page${NUM}.html"
           }
 
-          make_page 1 "$REVEAL_IDS_1"
-          make_page 2 "$REVEAL_IDS_2"
-          make_page 3 "$REVEAL_IDS_3"
-          make_page 4 "$REVEAL_IDS_4"
-          make_page 5 "$REVEAL_IDS_5"
-          make_page 6 "$REVEAL_IDS_6"
+          make_page 1 "${REVEAL_IDS_1:-}"
+          make_page 2 "${REVEAL_IDS_2:-}"
+          make_page 3 "${REVEAL_IDS_3:-}"
+          make_page 4 "${REVEAL_IDS_4:-}"
+          make_page 5 "${REVEAL_IDS_5:-}"
+          make_page 6 "${REVEAL_IDS_6:-}"
 
           # Homepage shows Page 1
           cp page1.html index.html
@@ -102,7 +94,8 @@ jobs:
         env:
           MODE: ${{ env.MODE }}
         run: |
-          set -e
+          set -euo pipefail
+
           if git diff --quiet; then
             echo "No changes to commit."
             exit 0
