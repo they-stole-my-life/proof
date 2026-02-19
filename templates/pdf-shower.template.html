@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PDF Archive</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; }
+    .pdf { margin: 18px 0; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; }
+    .hdr { padding: 10px 12px; background: #f7f7f7; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; }
+    .frame { width: 100%; height: 85vh; border: 0; display:block; }
+    .placeholder { padding: 18px 12px; background:#fafafa; color:#555; }
+  </style>
+</head>
+<body>
+  <h1>PDF Archive</h1>
+  <div id="container"></div>
+
+  <script>
+    const IDS_B64 = "__IDS_B64__";
+
+    function b64ToText(b64) {
+      try { return decodeURIComponent(escape(atob(b64))); }
+      catch { return atob(b64); }
+    }
+
+    const idsText = IDS_B64 ? b64ToText(IDS_B64).trim() : "";
+    const ids = idsText ? idsText.split("\n").map(s => s.trim()).filter(Boolean) : [];
+
+    const container = document.getElementById("container");
+
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      const src = `https://drive.google.com/file/d/${id}/preview`;
+
+      const section = document.createElement("section");
+      section.className = "pdf";
+      section.dataset.src = src;
+      section.dataset.name = `Document ${i + 1}`;
+      section.innerHTML = `
+        <div class="hdr">
+          <div>Document ${i + 1}</div>
+          <a class="open" href="${src}" target="_blank" rel="noopener">Open</a>
+        </div>
+        <div class="placeholder">Not loaded yet (scroll to load).</div>
+      `;
+      container.appendChild(section);
+    }
+
+    const ROOT_MARGIN = "600px 0px 600px 0px";
+
+    function mount(card) {
+      if (card.querySelector("iframe")) return;
+      const src = card.dataset.src;
+      const ph = card.querySelector(".placeholder");
+      const iframe = document.createElement("iframe");
+      iframe.className = "frame";
+      iframe.loading = "lazy";
+      iframe.src = src;
+      iframe.title = card.dataset.name || "PDF";
+      ph.replaceWith(iframe);
+    }
+
+    function unmount(card) {
+      const iframe = card.querySelector("iframe");
+      if (!iframe) return;
+      iframe.src = "about:blank";
+      const ph = document.createElement("div");
+      ph.className = "placeholder";
+      ph.textContent = "Unloaded (scroll back to load again).";
+      iframe.replaceWith(ph);
+    }
+
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        const card = e.target;
+        if (e.isIntersecting) mount(card);
+        else unmount(card);
+      }
+    }, { rootMargin: ROOT_MARGIN, threshold: 0.01 });
+
+    document.querySelectorAll(".pdf").forEach(card => io.observe(card));
+  </script>
+</body>
+</html>
