@@ -1,15 +1,12 @@
+```yaml
 name: Deadman Switch
 
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - "date.txt"
-      - "index_placeholder.html"
-      - "templates/**"
   schedule:
-    - cron: "0 */6 * * *"  # every 6 hours
-  workflow_dispatch: {}
+    - cron: "0 15 * * *"   # 9:00 AM Central Standard Time (UTC-6). Will be 10 AM during CDT.
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -21,32 +18,36 @@ concurrency:
 jobs:
   switch:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Determine mode from date.txt
+      - name: Determine SAFE or REVEAL mode
         run: |
           set -e
           DATE_STR="$(cat date.txt | tr -d ' \r\n')"
+
           if ! echo "$DATE_STR" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
             echo "date.txt must be YYYY-MM-DD"
             exit 1
           fi
 
-          NOW_SECS="$(date -u +%s)"
-          DATE_SECS="$(date -u -d "$DATE_STR" +%s)"
-          AGE_DAYS="$(( (NOW_SECS - DATE_SECS) / 86400 ))"
+          NOW=$(date -u +%s)
+          THEN=$(date -u -d "$DATE_STR" +%s)
+          AGE=$(( (NOW - THEN) / 86400 ))
 
-          echo "Age days: $AGE_DAYS"
-          if [ "$AGE_DAYS" -ge 2 ]; then
-            echo "MODE=REVEAL" >> $GITHUB_ENV
+          echo "Days since last update: $AGE"
+
+          if [ "$AGE" -ge 2 ]; then
+            echo "MODE=REVEAL" >> "$GITHUB_ENV"
           else
-            echo "MODE=SAFE" >> $GITHUB_ENV
+            echo "MODE=SAFE" >> "$GITHUB_ENV"
           fi
 
-      - name: Build pages
+      - name: Build site (SAFE or REVEAL)
         env:
           MODE: ${{ env.MODE }}
           REVEAL_IDS_1: ${{ secrets.REVEAL_IDS_1 }}
@@ -59,54 +60,46 @@ jobs:
           set -e
 
           if [ "$MODE" = "SAFE" ]; then
+            echo "SAFE MODE"
             cp index_placeholder.html index.html
-            # Optional: remove reveal pages so they aren't accessible in SAFE mode
             rm -f page1.html page2.html page3.html page4.html page5.html page6.html
-          else
-            # Build reveal index.html from template
-            LINKS=""
-            for i in 1 2 3 4 5 6; do
-              LINKS="${LINKS}<a href=\"page${i}.html\">Page ${i}</a>\n"
-            done
-            python3 - <<'PY'
-import pathlib, os
-tpl = pathlib.Path("templates/reveal-index.template.html").read_text(encoding="utf-8")
-links = os.environ["LINKS"]
-out = tpl.replace("__PAGE_LINKS__", links)
-pathlib.Path("index.html").write_text(out, encoding="utf-8")
-PY
+            exit 0
+          fi
 
-            # Function: make pageN.html from pdf template + secret list
-            make_page () {
-              n="$1"
-              ids="$2"
+          echo "REVEAL MODE"
 
-              # base64 encode IDs safely (preserves newlines)
-              ids_b64="$(printf "%s" "$ids" | base64 -w 0)"
+          make_page () {
+            NUM="$1"
+            IDS="$2"
 
-              python3 - <<PY
+            B64="$(printf "%s" "$IDS" | base64 -w 0)"
+
+            python3 - <<PY
 import pathlib
 tpl = pathlib.Path("templates/pdf-shower.template.html").read_text(encoding="utf-8")
-out = tpl.replace("__IDS_B64__", "${ids_b64}")
-pathlib.Path(f"page${n}.html").write_text(out, encoding="utf-8")
+out = tpl.replace("__IDS_B64__", "${B64}")
+pathlib.Path(f"page${NUM}.html").write_text(out, encoding="utf-8")
 PY
-            }
+          }
 
-            make_page 1 "$REVEAL_IDS_1"
-            make_page 2 "$REVEAL_IDS_2"
-            make_page 3 "$REVEAL_IDS_3"
-            make_page 4 "$REVEAL_IDS_4"
-            make_page 5 "$REVEAL_IDS_5"
-            make_page 6 "$REVEAL_IDS_6"
-          fi
-        env:
-          LINKS: ""
+          make_page 1 "$REVEAL_IDS_1"
+          make_page 2 "$REVEAL_IDS_2"
+          make_page 3 "$REVEAL_IDS_3"
+          make_page 4 "$REVEAL_IDS_4"
+          make_page 5 "$REVEAL_IDS_5"
+          make_page 6 "$REVEAL_IDS_6"
+
+          # Homepage should show Page 1 directly
+          cp page1.html index.html
 
       - name: Commit only if changed
+        env:
+          MODE: ${{ env.MODE }}
         run: |
           set -e
+
           if git diff --quiet; then
-            echo "No changes."
+            echo "No changes to commit."
             exit 0
           fi
 
@@ -115,3 +108,4 @@ PY
           git add -A
           git commit -m "deadman: set site mode ($MODE)"
           git push
+```
