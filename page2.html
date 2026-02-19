@@ -67,26 +67,6 @@
     .hdr { padding: 10px 12px; background: #f7f7f7; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; }
     .frame { width: 100%; height: 85vh; border: 0; display:block; }
     .placeholder { padding: 18px 12px; background:#fafafa; color:#555; }
-
-    /* SCROLL TOGGLE BUTTON (top/bottom) */
-    .scroll-btn {
-      position: fixed;
-      right: 18px;
-      bottom: 24px;
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      border: none;
-      background: #111;
-      color: #fff;
-      font-size: 20px;
-      cursor: pointer;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-      z-index: 2000;
-      transition: transform 0.15s ease, opacity 0.15s ease;
-    }
-    .scroll-btn:hover { transform: scale(1.08); }
-    .scroll-btn:active { transform: scale(0.98); }
   </style>
 </head>
 
@@ -110,9 +90,6 @@
   <div class="wrap">
     <div id="container"></div>
   </div>
-
-  <!-- Scroll toggle button -->
-  <button id="scrollToggle" class="scroll-btn" aria-label="Scroll to bottom">↓</button>
 
   <script>
     const IDS_B64 = "";
@@ -179,34 +156,6 @@
     }, { rootMargin: ROOT_MARGIN, threshold: 0.2 });
 
     document.querySelectorAll(".pdf").forEach(card => io.observe(card));
-
-    /* Scroll toggle: bottom if not at bottom, otherwise top */
-    const scrollBtn = document.getElementById("scrollToggle");
-
-    function atBottom() {
-      return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 5);
-    }
-
-    function updateScrollBtn() {
-      if (atBottom()) {
-        scrollBtn.textContent = "↑";
-        scrollBtn.setAttribute("aria-label", "Scroll to top");
-      } else {
-        scrollBtn.textContent = "↓";
-        scrollBtn.setAttribute("aria-label", "Scroll to bottom");
-      }
-    }
-
-    scrollBtn.addEventListener("click", () => {
-      if (!atBottom()) {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-      } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    });
-
-    window.addEventListener("scroll", updateScrollBtn, { passive: true });
-    updateScrollBtn();
   </script>
 
 </body>
