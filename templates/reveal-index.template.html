@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Archive</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 40px;
+      background: #f9f9f9;
+      color: #222;
+    }
+    h1 { margin-bottom: 20px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+      gap: 16px;
+    }
+    a {
+      display: block;
+      padding: 18px;
+      border-radius: 12px;
+      background: white;
+      text-decoration: none;
+      color: #222;
+      box-shadow: 0 6px 20px rgba(0,0,0,.05);
+      transition: transform .15s ease;
+    }
+    a:hover { transform: translateY(-3px); }
+  </style>
+</head>
+<body>
+  <h1>Archive</h1>
+  <div class="grid">
+    __PAGE_LINKS__
+  </div>
+</body>
+</html>
