@@ -67,6 +67,26 @@
     .hdr { padding: 10px 12px; background: #f7f7f7; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; }
     .frame { width: 100%; height: 85vh; border: 0; display:block; }
     .placeholder { padding: 18px 12px; background:#fafafa; color:#555; }
+
+    /* SCROLL TOGGLE BUTTON (top/bottom) */
+    .scroll-btn {
+      position: fixed;
+      right: 18px;
+      bottom: 24px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: none;
+      background: #111;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      z-index: 2000;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+    .scroll-btn:hover { transform: scale(1.08); }
+    .scroll-btn:active { transform: scale(0.98); }
   </style>
 </head>
 
@@ -90,6 +110,9 @@
   <div class="wrap">
     <div id="container"></div>
   </div>
+
+  <!-- Scroll toggle button -->
+  <button id="scrollToggle" class="scroll-btn" aria-label="Scroll to bottom">↓</button>
 
   <script>
     const IDS_B64 = "MWd0cVJGQW1UYnBmMU5fc0VIdS1EQkw0T2JQVUt3SVJQCjE5YVR5ZkxJb202ak9BT3ZxQjBuT2dFQmdFSzRiV2hYZgoxRjdONk9kN3UyNUZrSlRMVU94MnFlakc5WDZjMFFsbloKMVdFb3RsWUhSazdWY24xekNLZWJLUWNpWlY2WVQ4SHg0CjFHYktEUk5WN3ZCSVpqSDJYMVE2Y1FBbkFhbTJYeVdZbgoxMzY5dV9NOF9tbk0wZGZsVDZHNzVTOU41eXNIY3dOX3oKMXR4Ny1EZ3hqVG5VTjhrTmtLNnhLNDdIUlJoQWg4d3dXCjFTSEhWaU4wbWdNME5zc3pYbEZlajNVZzdOZGdqUkhHRQoxbVQwV2ZlS2xsN0VlQzc5VEhLMC1IY09BOEQ4WDZaYVgKMVRFMHF3R0RTV2UtazAyYTR0RExXNl9DLWZlbnQzZFlYCjFEN1VHYllONHROU0QtWHRya3ZNVVlERDJsSDVqVGQ5TwoxWkxhMUh5Qk1BU0JSZnpQMmdaWlNXSERfN1FGTzBXeGoKMWFmODV4MVpVcmMtT1kwOTl5dGxmdzg5elVycWxyWWhZCjFhbWNmVDdJSmNJQnRSc0xDNFFxTndBakpHamdNMVAwSgoxaTVRNzBkY0diaXlfQWlYdVZRdUgxeGNmZGhxcmpLaUMKMW1PYzJublVPNGQwUS1ReVIzaGVKQk9QZ3Izd2hPbkM1CjE1SDFyVE9TSW9WZFBMX2twVERaV1I0Rzh4R3dfaXFXegoxQzZ4S2praUV5VTgxdzFRd3lyb1M0aEVIYndnUWVaLWUKMXoza1N4ckFVQUFJM3o4d2VTZndYQ01KQXRJNHBRMzJOCjFiREl6X05xUUxVdlFuM09PTkhfbGpOZ25zOE1XTjNMOQoxazRTczgyeWE1dnRVQy14bGZOS2hvb1FoVzRLV011akoKMWpId3ZpZ3JINTdBcEZDc1BYbkJfc3htN1N2NHBfSkJOCjFhMWItTE5jWmd6ZHVyVGVIYWVJN2tvTkszbm00ZDBJVwoxNS05c2h4MUtLTmdpa2xRX09GVjFnNlRvSEc2VmdCSjMKMUs4bWlnaFVLSElTU25pY0NORGFwcjN5M2tSZmU5ajNaCjEzZlVNay1GR051dFVTYjd3VnJha1Y1cXY1WXkzTDM0OAoxblBkd1hUTkZRLXZWV2xBZmFNSDlXY2VfZ2JiNkUwRFQKMWY5RFUzVG9TM3ItaG5KMXEwaVZuMTI5cG9Gb3ptY2VHCjFmR1djLWlvWWU3VC1yNkdtakpUS0UzY1VkRDFzeHBSUAoxMTJXcFZMbjFvSk1aYnpLLVE2QkhHOEZjR2VfR1N4ZDQKMXhvWU1wa2VDSU1RWWVvQzlsWlBtaFRhdHdLQXpBb2FQCjF2ZGkydVhCaURhdnNrS0dNaWo4RkFuemNKZWdBZE8xdgoxY29jS0p1VzZRQ2NJXzNzQ2VsWHIyS2lVU0dkUmNLOTQKMVlRQ0prRVlmakFjMVFsTlpHODB6c1JDekN3QTVvN3JjCjF2X3FlU2Y4MlBuaGpPWkdNVklFY0VMMHUzYzZoSEVNNgoxY3lCZGVJbl9yaDg4Q2lxZFRJRmlrMVhSZUJVTUhrNGIKMXBWa1Jra3pnbXc5MkItSjBGcldybGlORVlKYktpc05SCjFleDZobkdMQS1GeXNtUHdwYTFKb2FTQ0JkZXdPdVR5OAoxaFo0TzZfSEdkWjR6cHo3R0E0aDc1UzRBQ2NvNG9hcmUKMUlmRjJMZ3R6aU9Ib2N2VXdiRDRZVk56UmlYSWFoVko3CjFsYzljcUlkU3R2RXV4OVpvNFREY0hacnEtR0x3TUFlMgoxdk5Yb1V2WjZHM212UExrcWdfVWRBZE1DRkJ3Q1hvYTcKMW9XdXZ1Snpod0VXS3Fkcm0yRE13b0JjNVZ3YkQ5bVJyCjFGTVU1ODBfZk9yV1RYU0Fxdkl5MFB6UVhyOV9aMy1zYwoxeWlKdG9CbHVURjJuT1JqR1pveGJ0YXduNEt1SGVmT3cKMTRVeWRoRlZ5N3FYOS1pd0RJUUU0UEZBTnZBZDlwTG5UCjE1MGI5NkhRVzFwMVFoaV9MQWtlMEozTjhpMnNrU1VIeQoxUElCNlk3ay1Cak8xRDVfYmR1QXg1RkVzdmt4UTRqZTUKMWxrMWZROHpWYXBLaTdLemNFUUxwVVU5SGdvUVlpdTVzCjFTQmJDTmhGTkxmemR6c1NhX3RkaWlVbnlweFFHZzlsMQoxdDlzc19YNkd3am5jME1ZXzA0cE03V0hRNzc2YWJ4WnkKMWVNQ1N1dTVoWG1xcUlXQ1I4MkFiWnlZMGVaMmFtLUdSCjFwWFc2eFhxQ1FhSmhnQkVWOGtDelhaVTR2OXNHZ1lwNgoxSThPaXd3bWt0WGRDLXNERy1xSGJ0RzRLWGU0UWhCbm0KMWZoVkp6OEdQQmRCcWprWi1zNXRZaEIwYWpQRmJPdU5rCjF4VzNTS1laUE9kRjh5MWJ4V0JNc0tQZi05c012NV9JQgoxSTNDaF9hUDNmS29KVXplUUNCQWtBNzFQV0JpNDZzV28KMWEzY09jWWhINlZ5VDQ1Xzg1elc0TmdCamVkMU16Tkl4CjE0STZPdkNkSTFTaDRKNlZGN1NSbkVLXzFKZTlxNXRpTgoxSHNqQ3ZwUXNtTEZhbEdFWkZkblJGTFo2QzlwUnJrc3MKMVhWczBaREhaVVVDXzhYZjRkcVdFWklQV1dpMVc5b09JCjFwWkxYZDRkM1BwMndrNjNkS3BFYVlCZ2I4eGZYRWlfOQoxQnBxQnl5ZkxQUDBfNHdhcHlTUDhWdXpWQ1FUVHBUOEcKMTlwUXE3N3BBWWNQczJpX0k4QmFnc1NaRWxDVm9WRzEyCjFMTDlhY01tcVRhVGZxdW9uN3ItaXhQUHdTUU9iQXJ2SgoxVUlPbElsTEdhQTd5RnFNTGlST2RVS3dZVDFjeGxMNGcKMV9LOGZMcUlvT0pDNjAtNjlTQW8xYmRhUjA1MUZvZE05CjFVWHBFdnVPVEpXLWp6R2dhUWV5OEFRTWloVzN2dXhkQwoxbUhmc2NFQWdRUllzMWU5ZjFzcmNkd1JGbl9PaGMxMlIKMXI5VkRYbHpVd2s4UTBEMkFqeEdzLU1qdllWbUVWdjZ4CjFzbzJfWkg2R0lmbExrakdURTFybkUzV2J3YnpKTV9GQgoxcWtlN3gxdjdfejl4c2NWN0F3eTdBMUdGWUxSZUhWU3oKMTNKelNRempYemxJTkhMaGl4TV9DMlVuZk16dF9fR25GCjFqbG12T214UkJvQ1pFamlXOFFua1hOOHN4N0IzZnFBZwoxVjYwX3hFcFVyckotV2JUS1RkNEFmRmFhekpMRDJIZmEKMUlXeV81ZDQ0OUJNVEtzaV9wTVZDd0xrdTh4Wl94RGpWCjF2MUcwcGlWUEdQSzFUOC1GNHdsVGhhRERWYTZQNEs1XwoxZWpBb04xTU4tWVZpOFYwU0FBSVZ1Sk9GWXNKdG0zbTIKMU50UGFjajNueUpnUjBhSTA4YnBWcTIyZ1hKMEhlTmwzCjFHSWw5bWFDcmhzS19pbUlLZ05TM21yZk5wYWhseXRXaAoxekE4M2lTdjVYbTV6UnZTeFV4bmxScV9MdURweVNnYkEKMW9acDlRTlNfZlE5aWFWeFBXdGV4cGJPZk5UNjQ1RmZVCjFSNkVTZm1lU2pyWUZGUTIwQjYxZ0VZbTBwR2RtZFVVUAoxYnk0czltc2tzVTIyTnZ3TEYzU284YTFDTFE2MTgxdVgKMW05SGFEUlhXVFNSSTZBcE9IcHNyNUF0QTE4NFZVOEVfCjFUVmtSSjFHbDJuSEdTSlFTd0FrV2tMcHZwbktrTzd6MwoxNWpucExIOTgwNnFoV2I3VF8yRjREQlNjVWdYYndxTFQ=";
@@ -156,6 +179,34 @@
     }, { rootMargin: ROOT_MARGIN, threshold: 0.2 });
 
     document.querySelectorAll(".pdf").forEach(card => io.observe(card));
+
+    /* Scroll toggle: bottom if not at bottom, otherwise top */
+    const scrollBtn = document.getElementById("scrollToggle");
+
+    function atBottom() {
+      return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 5);
+    }
+
+    function updateScrollBtn() {
+      if (atBottom()) {
+        scrollBtn.textContent = "↑";
+        scrollBtn.setAttribute("aria-label", "Scroll to top");
+      } else {
+        scrollBtn.textContent = "↓";
+        scrollBtn.setAttribute("aria-label", "Scroll to bottom");
+      }
+    }
+
+    scrollBtn.addEventListener("click", () => {
+      if (!atBottom()) {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+
+    window.addEventListener("scroll", updateScrollBtn, { passive: true });
+    updateScrollBtn();
   </script>
 
 </body>
