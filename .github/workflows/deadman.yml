@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 15 * * *'
+    - cron: '0 15 * * *'   # 9:00 AM CST (15:00 UTC). Will be 10 AM during CDT.
   workflow_dispatch:
 
 permissions:
@@ -23,23 +23,26 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Determine mode
+      - name: Determine SAFE or REVEAL
         run: |
-          DATE_STR=$(cat date.txt | tr -d ' \r\n')
+          set -e
+          DATE_STR="$(cat date.txt | tr -d ' \r\n')"
 
           if ! echo "$DATE_STR" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
-            echo "Invalid date format"
+            echo "date.txt must be YYYY-MM-DD"
             exit 1
           fi
 
-          NOW=$(date -u +%s)
-          THEN=$(date -u -d "$DATE_STR" +%s)
-          AGE=$(( (NOW - THEN) / 86400 ))
+          NOW="$(date -u +%s)"
+          THEN="$(date -u -d "$DATE_STR" +%s)"
+          AGE="$(( (NOW - THEN) / 86400 ))"
+
+          echo "Days since last update: $AGE"
 
           if [ "$AGE" -ge 2 ]; then
-            echo "MODE=REVEAL" >> $GITHUB_ENV
+            echo "MODE=REVEAL" >> "$GITHUB_ENV"
           else
-            echo "MODE=SAFE" >> $GITHUB_ENV
+            echo "MODE=SAFE" >> "$GITHUB_ENV"
           fi
 
       - name: Build site
@@ -47,31 +50,39 @@ jobs:
           MODE: ${{ env.MODE }}
           REVEAL_IDS_1: ${{ secrets.REVEAL_IDS_1 }}
         run: |
+          set -e
+
           if [ "$MODE" = "SAFE" ]; then
+            echo "SAFE MODE"
             cp index_placeholder.html index.html
             rm -f page1.html
             exit 0
           fi
 
-          B64=$(printf "%s" "$REVEAL_IDS_1" | base64 -w 0)
+          echo "REVEAL MODE"
 
-          python3 - <<PY
-import pathlib
-tpl = pathlib.Path("templates/pdf-shower.template.html").read_text()
-out = tpl.replace("__IDS_B64__", "${B64}")
-pathlib.Path("page1.html").write_text(out)
-PY
+          # Base64 encode IDs (preserve newlines safely)
+          IDS_B64="$(printf "%s" "$REVEAL_IDS_1" | base64 -w 0)"
 
+          # Build page1.html from template using sed replacement
+          # (uses a delimiter unlikely to appear in base64)
+          sed "s|__IDS_B64__|$IDS_B64|g" templates/pdf-shower.template.html > page1.html
+
+          # Make homepage show Page 1 directly
           cp page1.html index.html
 
       - name: Commit if changed
+        env:
+          MODE: ${{ env.MODE }}
         run: |
+          set -e
           if git diff --quiet; then
+            echo "No changes to commit."
             exit 0
           fi
 
           git config user.name "deadman-bot"
           git config user.email "deadman-bot@users.noreply.github.com"
           git add -A
-          git commit -m "deadman mode update"
+          git commit -m "deadman: mode update ($MODE)"
           git push
