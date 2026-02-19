@@ -122,7 +122,8 @@
       container.appendChild(section);
     }
 
-    const ROOT_MARGIN = "600px 0px 600px 0px";
+    /* Mobile stability: load closer to viewport and only when meaningfully visible */
+    const ROOT_MARGIN = "150px 0px 150px 0px";
 
     function mount(card) {
       if (card.querySelector("iframe")) return;
@@ -152,7 +153,7 @@
         if (e.isIntersecting) mount(card);
         else unmount(card);
       }
-    }, { rootMargin: ROOT_MARGIN, threshold: 0.01 });
+    }, { rootMargin: ROOT_MARGIN, threshold: 0.2 });
 
     document.querySelectorAll(".pdf").forEach(card => io.observe(card));
   </script>
