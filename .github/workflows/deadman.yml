@@ -1,11 +1,11 @@
-```yaml
 name: Deadman Switch
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   schedule:
-    - cron: "0 15 * * *"   # 9:00 AM Central Standard Time (UTC-6). Will be 10 AM during CDT.
+    - cron: '0 15 * * *'
   workflow_dispatch:
 
 permissions:
@@ -22,16 +22,13 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Determine SAFE or REVEAL mode
+      - name: Determine mode
         run: |
-          set -e
-          DATE_STR="$(cat date.txt | tr -d ' \r\n')"
+          DATE_STR=$(cat date.txt | tr -d ' \r\n')
 
           if ! echo "$DATE_STR" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
-            echo "date.txt must be YYYY-MM-DD"
+            echo "Invalid date format"
             exit 1
           fi
 
@@ -39,73 +36,42 @@ jobs:
           THEN=$(date -u -d "$DATE_STR" +%s)
           AGE=$(( (NOW - THEN) / 86400 ))
 
-          echo "Days since last update: $AGE"
-
           if [ "$AGE" -ge 2 ]; then
-            echo "MODE=REVEAL" >> "$GITHUB_ENV"
+            echo "MODE=REVEAL" >> $GITHUB_ENV
           else
-            echo "MODE=SAFE" >> "$GITHUB_ENV"
+            echo "MODE=SAFE" >> $GITHUB_ENV
           fi
 
-      - name: Build site (SAFE or REVEAL)
+      - name: Build site
         env:
           MODE: ${{ env.MODE }}
           REVEAL_IDS_1: ${{ secrets.REVEAL_IDS_1 }}
-          REVEAL_IDS_2: ${{ secrets.REVEAL_IDS_2 }}
-          REVEAL_IDS_3: ${{ secrets.REVEAL_IDS_3 }}
-          REVEAL_IDS_4: ${{ secrets.REVEAL_IDS_4 }}
-          REVEAL_IDS_5: ${{ secrets.REVEAL_IDS_5 }}
-          REVEAL_IDS_6: ${{ secrets.REVEAL_IDS_6 }}
         run: |
-          set -e
-
           if [ "$MODE" = "SAFE" ]; then
-            echo "SAFE MODE"
             cp index_placeholder.html index.html
-            rm -f page1.html page2.html page3.html page4.html page5.html page6.html
+            rm -f page1.html
             exit 0
           fi
 
-          echo "REVEAL MODE"
+          B64=$(printf "%s" "$REVEAL_IDS_1" | base64 -w 0)
 
-          make_page () {
-            NUM="$1"
-            IDS="$2"
-
-            B64="$(printf "%s" "$IDS" | base64 -w 0)"
-
-            python3 - <<PY
+          python3 - <<PY
 import pathlib
-tpl = pathlib.Path("templates/pdf-shower.template.html").read_text(encoding="utf-8")
+tpl = pathlib.Path("templates/pdf-shower.template.html").read_text()
 out = tpl.replace("__IDS_B64__", "${B64}")
-pathlib.Path(f"page${NUM}.html").write_text(out, encoding="utf-8")
+pathlib.Path("page1.html").write_text(out)
 PY
-          }
 
-          make_page 1 "$REVEAL_IDS_1"
-          make_page 2 "$REVEAL_IDS_2"
-          make_page 3 "$REVEAL_IDS_3"
-          make_page 4 "$REVEAL_IDS_4"
-          make_page 5 "$REVEAL_IDS_5"
-          make_page 6 "$REVEAL_IDS_6"
-
-          # Homepage should show Page 1 directly
           cp page1.html index.html
 
-      - name: Commit only if changed
-        env:
-          MODE: ${{ env.MODE }}
+      - name: Commit if changed
         run: |
-          set -e
-
           if git diff --quiet; then
-            echo "No changes to commit."
             exit 0
           fi
 
           git config user.name "deadman-bot"
           git config user.email "deadman-bot@users.noreply.github.com"
           git add -A
-          git commit -m "deadman: set site mode ($MODE)"
+          git commit -m "deadman mode update"
           git push
-```
